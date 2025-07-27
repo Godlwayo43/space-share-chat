@@ -30,7 +30,7 @@ app.use(cors({
 
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: ["http://localhost:3000" , 'http://spaceshare-scjy.onrender.com/'],
     methods: ["GET", "POST"],
     credentials: true
   },
@@ -68,28 +68,53 @@ const axiosInstance = axios.create({
     headers: apiConfig.headers,
   });
 
+  // app.post('/create-chat', (req, res) => {
+  //   const packageData = req.body;
+  //   if (!packageData._id) {
+  //     packageData._id = generateId();
+  //   }
+  
+  //   const data = JSON.stringify({
+  //     "collection": "chats",
+  //     "database": "carryon",
+  //     "dataSource": "Cluster0",
+  //     "document": packageData
+  //   });
+  
+  //   axios({ ...apiConfig, url: `${apiConfig.urlBase}insertOne`, data })
+  //     .then(response => {
+  //       res.json(response.data);
+  //     })
+  //     .catch(error => {
+  //       console.error('Error:', error);
+  //       res.status(500).send(error);
+  //     });
+  // });
+
   app.post('/create-chat', (req, res) => {
-    const packageData = req.body;
-    if (!packageData._id) {
-      packageData._id = generateId();
-    }
-  
-    const data = JSON.stringify({
-      "collection": "chats",
-      "database": "carryon",
-      "dataSource": "Cluster0",
-      "document": packageData
-    });
-  
-    axios({ ...apiConfig, url: `${apiConfig.urlBase}insertOne`, data })
-      .then(response => {
-        res.json(response.data);
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        res.status(500).send(error);
-      });
+  const packageData = req.body;
+  if (!packageData._id) {
+    packageData._id = generateId();
+  }
+
+  const data = JSON.stringify({
+    "collection": "chats",
+    "database": "carryon",
+    "dataSource": "Cluster0",
+    "document": packageData
   });
+
+  axios({ ...apiConfig, url: `${apiConfig.urlBase}insertOne`, data })
+    .then(response => {
+      // Emit the new chat to all relevant users
+      io.emit('new-chat', packageData);
+      res.json(response.data);
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      res.status(500).send(error);
+    });
+});
 
   // check if a chat already exists 
   app.post('/check-chat', async (req, res) => {
@@ -230,26 +255,50 @@ const axiosInstance = axios.create({
 
 
 
-  app.put('/edit-chats/:id', async (req, res) => {
-    const { id } = req.params; 
-    const updateData = req.body; 
+//   app.put('/edit-chats/:id', async (req, res) => {
+//     const { id } = req.params; 
+//     const updateData = req.body; 
 
-    console.log(id)
+//     console.log(id)
 
-    const data = JSON.stringify({
-        collection: "chats", 
-        database: "carryon", 
-        dataSource: "Cluster0",
-        filter: { _id: id }, 
-        update: { $set: updateData }, 
-    });
+//     const data = JSON.stringify({
+//         collection: "chats", 
+//         database: "carryon", 
+//         dataSource: "Cluster0",
+//         filter: { _id: id }, 
+//         update: { $set: updateData }, 
+//     });
 
-    axios({ ...apiConfig, url: `${apiConfig.urlBase}updateOne`, data })
-        .then(response => res.json(response.data))
-        .catch(error => {
-            console.error('Error updating offer:', error);
-            res.status(500).send(error);
-        });
+//     axios({ ...apiConfig, url: `${apiConfig.urlBase}updateOne`, data })
+//         .then(response => res.json(response.data))
+//         .catch(error => {
+//             console.error('Error updating offer:', error);
+//             res.status(500).send(error);
+//         });
+// });
+
+app.put('/edit-chats/:id', async (req, res) => {
+  const { id } = req.params;
+  const updateData = req.body;
+
+  const data = JSON.stringify({
+      collection: "chats", 
+      database: "carryon", 
+      dataSource: "Cluster0",
+      filter: { _id: id }, 
+      update: { $set: updateData }, 
+  });
+
+  axios({ ...apiConfig, url: `${apiConfig.urlBase}updateOne`, data })
+      .then(response => {
+          // Emit the updated chat
+          io.emit('update-chat', { id, ...updateData });
+          res.json(response.data);
+      })
+      .catch(error => {
+          console.error('Error updating offer:', error);
+          res.status(500).send(error);
+      });
 });
 
 
