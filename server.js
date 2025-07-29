@@ -30,7 +30,7 @@ app.use(cors({
 
 const io = socketIo(server, {
   cors: {
-    origin: ["http://localhost:3000" , 'http://spaceshare-scjy.onrender.com/'],
+    origin: ["http://localhost:3000" , 'http://spaceshare-scjy.onrender.com/' , "https://meli-flow.vercel.app/"],
     methods: ["GET", "POST"],
     credentials: true
   },
