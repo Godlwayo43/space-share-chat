@@ -301,7 +301,34 @@ app.put('/edit-chats/:id', async (req, res) => {
       });
 });
 
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'alive', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime() 
+  });
+});
+
+// Super simple HTTP-only keep-alive
+const simpleKeepAlive = async () => {
+  try {
+    console.log('🔄 Simple keep-alive ping at:', new Date().toISOString());
+    
+    // Just hit your health endpoint
+    const response = await axios.get(`http://localhost:${PORT}/health`);
+    console.log('✅ Simple keep-alive successful');
+    
+  } catch (error) {
+    console.log('⚠️ Simple keep-alive error:', error.message);
+  }
+};
+
+// Start simple keep-alive
+setInterval(simpleKeepAlive, 15 * 60 * 1000);
+simpleKeepAlive(); // Run once immediately
+
 
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
   });
+
