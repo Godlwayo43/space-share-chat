@@ -356,7 +356,7 @@ app.use(cors({
 // Socket.IO Configuration
 const io = socketIo(server, {
   cors: {
-    origin: ["*"],
+    origin: "*",
     // origin: ["http://localhost:3000", "https://spaceshare-scjy.onrender.com", "https://meli-flow.onrender.com", "https://meli-flow.vercel.app"],
 
     methods: ["GET", "POST"],
@@ -793,4 +793,5 @@ process.on('SIGINT', async () => {
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
 
